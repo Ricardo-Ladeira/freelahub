@@ -28,7 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->setTipoServico($_POST['tipo_servico'])
                 ->setDescricaoServico($_POST['descricao_servico'])
                 ->setExperiencia($_POST['experiencia']);
-        if($perfil->salvar()){
+        $id_perfil = $perfil->salvar();
+        if($id_perfil){
                 $usuario = new Usuario();
                 $usuario->setEmail($_POST['email'])
                 ->setNome($_POST['nome'])
@@ -42,10 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: login.php');
             exit();
         } else {
-            $erro = 'Erro ao salvar usuário. Por favor, tente novamente.';
+            $erro = 'Erro ao salvar usuário. Por favor, verifique seu email e tente novamente.';
+            $perfil->excluir($id_perfil);
         }
     } else {
-        $erro = 'Erro ao criar perfil. Verifique os dados e tente novamente.';
+        $erro = 'Erro ao criar perfil. Verifique seu telefone e tente novamente.';
     }
 }
 
@@ -58,93 +60,121 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - FreelaHub</title>
-    <link rel="stylesheet" href="css/cadastro_pages.css" />
+    <link rel="stylesheet" href="../public/css/style.css" />
 </head>
 <body>
-    <h1>Cadastro - FreelaHub</h1>
-    
-    <div class="info-box">
-        <p>Preencha o formulário abaixo para criar sua conta e perfil de freelancer.</p>
-    </div>
-    
-    <?php if ($erro): ?>
-        <div class="error"><?= $erro ?></div>
-    <?php endif; ?>
-    
-    <div class="cadastro-form">
-        <form id="cadastroForm" method="POST">
-            <h2>Dados Pessoais</h2>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="nome">Nome Completo:</label>
-                    <input type="text" id="nome" name="nome" value="<?= $valores['nome'] ?>" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="data_nascimento">Data de Nascimento:</label>
-                    <input type="date" id="data_nascimento" name="data_nascimento" value="<?= $valores['data_nascimento'] ?>" required>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="email">E-mail:</label>
-                    <input type="email" id="email" name="email" value="<?= $valores['email'] ?>" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="senha">Senha:</label>
-                    <input type="password" id="senha" name="senha" required>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="cidade">Cidade:</label>
-                    <input type="text" id="cidade" name="cidade" value="<?= $valores['cidade'] ?>" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="uf">UF:</label>
-                    <input type="text" id="uf" name="uf" value="<?= $valores['uf'] ?>" required>
-                </div>
-            </div>
-            
-            <h2>Dados Profissionais</h2>
-            
-            <div class="form-group">
-                <label for="telefone">Telefone:</label>
-                <input type="tel" id="telefone" name="telefone" value="<?= $valores['telefone'] ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="tipo_servico">Tipo de Serviço:</label>
-                <input type="text" id="tipo_servico" name="tipo_servico" value="<?= $valores['tipo_servico'] ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="experiencia">Nível de Experiência:</label>
-                <select id="experiencia" name="experiencia" required>
-                    <option value="">Selecione</option>
-                    <option value="Iniciante" <?= $valores['experiencia'] == 'Iniciante' ? 'selected' : '' ?>>Iniciante</option>
-                    <option value="Intermediário" <?= $valores['experiencia'] == 'Intermediário' ? 'selected' : '' ?>>Intermediário</option>
-                    <option value="Avançado" <?= $valores['experiencia'] == 'Avançado' ? 'selected' : '' ?>>Avançado</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="descricao_servico">Descrição do Serviço:</label>
-                <textarea id="descricao_servico" name="descricao_servico" rows="4" required><?= $valores['descricao_servico'] ?></textarea>
-            </div>
-            
-            <button type="submit">Cadastrar</button>
-        </form>
-        
-        <div class="login-link">
-            <p>Já tem uma conta? <a href="login.php">Faça login</a></p>
-            <a href="../index.html">Ir para página inicial</a>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo-02">
+            <img src="../public/images/logo02.png" alt="Logo FreelaHub" />
         </div>
-    </div>
+        
+        <ul class="nav-links">
+            <li><a href="../index.html">Início</a></li>
+            <li><a href="cadastro.php">Cadastro</a></li>
+            <li><a href="login.php">Login</a></li>
+            <li><a href="consultar.php">Explorar</a></li>
+        </ul>
+    </nav>
+
+    <!-- CONTAINER PRINCIPAL -->
+    <section class="register-container">
+        <div class="register-box">
+            <div class="register-header">
+                <img src="../public/images/logo01.png" alt="FreelaHub Logo">
+                <h1>FreelaHub</h1>
+                <p>Crie sua conta de freelancer</p>
+            </div>
+
+            <?php if ($erro): ?>
+                <div class="error-message">
+                    <?= $erro ?>
+                </div>
+            <?php endif; ?>
+
+            <form id="cadastroForm" method="POST" class="register-form">
+                <fieldset>
+                    <legend>Dados Pessoais</legend>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome">Nome Completo:</label>
+                            <input type="text" id="nome" name="nome" value="<?= htmlspecialchars($valores['nome']) ?>" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="data_nascimento">Data de Nascimento:</label>
+                            <input type="date" id="data_nascimento" name="data_nascimento" value="<?= htmlspecialchars($valores['data_nascimento']) ?>" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">E-mail:</label>
+                            <input type="email" id="email" name="email" value="<?= htmlspecialchars($valores['email']) ?>" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="senha">Senha:</label>
+                            <input type="password" id="senha" name="senha" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cidade">Cidade:</label>
+                            <input type="text" id="cidade" name="cidade" value="<?= htmlspecialchars($valores['cidade']) ?>" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="uf">UF:</label>
+                            <input type="text" id="uf" name="uf" maxlength="2" value="<?= htmlspecialchars($valores['uf']) ?>" required>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Dados Profissionais</legend>
+                    
+                    <div class="form-group">
+                        <label for="telefone">Telefone:</label>
+                        <input type="tel" id="telefone" name="telefone" value="<?= htmlspecialchars($valores['telefone']) ?>" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo_servico">Tipo de Serviço:</label>
+                        <input type="text" id="tipo_servico" name="tipo_servico" value="<?= htmlspecialchars($valores['tipo_servico']) ?>" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experiencia">Nível de Experiência:</label>
+                        <select id="experiencia" name="experiencia" required>
+                            <option value="">Selecione</option>
+                            <option value="Iniciante" <?= $valores['experiencia'] == 'Iniciante' ? 'selected' : '' ?>>Iniciante</option>
+                            <option value="Intermediário" <?= $valores['experiencia'] == 'Intermediário' ? 'selected' : '' ?>>Intermediário</option>
+                            <option value="Avançado" <?= $valores['experiencia'] == 'Avançado' ? 'selected' : '' ?>>Avançado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="descricao_servico">Descrição do Serviço:</label>
+                        <textarea id="descricao_servico" name="descricao_servico" rows="4" required><?= htmlspecialchars($valores['descricao_servico']) ?></textarea>
+                    </div>
+                </fieldset>
+
+                <button type="submit" class="register-button">Cadastrar</button>
+                
+                <div class="login-link">
+                    <p>Já tem uma conta? <a href="login.php">Faça login</a></p>
+                    <a href="../index.html" class="home-link">Ir para página inicial</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <p> © 2025 | FreelaHub</p>
+    </footer>
 </body>
 </html>

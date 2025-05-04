@@ -5,6 +5,7 @@ require_once __DIR__ . '/Usuario.php';
 class Perfil {
     private $crud;
     private $id;
+    private $usuarioId;
     private $telefone;
     private $tipoServico;
     private $descricaoServico;
@@ -17,6 +18,15 @@ class Perfil {
     // Getters e Setters
     public function getId() {
         return $this->id;
+    }
+
+    public function getUsuarioId() {
+        return $this->id;
+    }
+
+    public function setUsuarioId($usuarioId) {
+        $this->usuarioId = $usuarioId;
+        return $this;
     }
 
     public function getTelefone() {

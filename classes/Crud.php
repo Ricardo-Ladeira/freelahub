@@ -161,4 +161,8 @@ class Crud {
     
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
+public function getLastInsertId() {
+    return $this->conn->insert_id;
+
+}
 }
